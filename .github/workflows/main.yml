@@ -34,11 +34,15 @@ jobs:
     # 5. 部署到腾讯云服务器
     - name: Deploy to Tencent Cloud
       uses: easingthemes/ssh-deploy@v4.1.8
+      env:
+        SOURCE: "./dist/"  # 关键：指定要传输的本地文件夹
       with:
         SSH_PRIVATE_KEY: ${{ secrets.TENCENT_SSH_KEY }}
         REMOTE_HOST: ${{ secrets.TENCENT_HOST }}
         REMOTE_USER: ${{ secrets.TENCENT_USER }}
+        SOURCE: ${{ env.SOURCE }}  # 告诉Action传输这个目录
         TARGET: ${{ env.DEPLOY_PATH }}
+        ARGS: "-avz --delete"  # 建议添加的参数：归档模式、压缩、删除远程多余文件
         SCRIPT_BEFORE: |
           # 备份当前版本
           sudo cp -r ${{ env.DEPLOY_PATH }} ${{ env.DEPLOY_PATH }}-backup-$(date +%Y%m%d%H%M%S) || true
