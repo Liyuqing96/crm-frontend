@@ -1,0 +1,51 @@
+name: Deploy to Tencent Cloud
+
+on:
+  push:
+    branches: [ master ]  # main分支推送时自动部署
+
+env:
+  NODE_VERSION: '22'   # Node.js版本
+  DEPLOY_PATH: '/var/www/html'  # 服务器部署路径
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. 拉取代码
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    # 2. 设置Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    # 3. 安装依赖
+    - name: Install dependencies
+      run: npm install
+    
+    # 4. 构建项目
+    - name: Build project
+      run: npm run build
+    
+    # 5. 部署到腾讯云服务器
+    - name: Deploy to Tencent Cloud
+      uses: easingthemes/ssh-deploy@v4.1.8
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.TENCENT_SSH_KEY }}
+        REMOTE_HOST: ${{ secrets.TENCENT_HOST }}
+        REMOTE_USER: ${{ secrets.TENCENT_USER }}
+        TARGET: ${{ env.DEPLOY_PATH }}
+        SCRIPT_BEFORE: |
+          # 备份当前版本
+          sudo cp -r ${{ env.DEPLOY_PATH }} ${{ env.DEPLOY_PATH }}-backup-$(date +%Y%m%d%H%M%S) || true
+          sudo rm -rf ${{ env.DEPLOY_PATH }}/*
+        SCRIPT_AFTER: |
+          # 设置权限
+          sudo chown -R www-data:www-data ${{ env.DEPLOY_PATH }}
+          sudo chmod -R 755 ${{ env.DEPLOY_PATH }}
+          # 重启nginx（如果需要）
+          sudo systemctl reload nginx || true
