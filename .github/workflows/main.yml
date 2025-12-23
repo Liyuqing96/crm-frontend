@@ -1,4 +1,4 @@
-name: Deploy to Tencent Cloud By Root
+name: Deploy to Tencent Cloud By Test
 
 on:
   push:
