@@ -1,4 +1,4 @@
-name: Deploy to Tencent Cloud By ubantu
+name: Deploy to Tencent Cloud By ubantu Test
 
 on:
   push:
