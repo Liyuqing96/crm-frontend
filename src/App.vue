@@ -17,7 +17,7 @@ getUserList().then((response) => {
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
-      <HelloWorld msg="Welcome To Julia-continuing Vue3 Web!" />
+      <HelloWorld msg="Welcome To Julia-continuing Vue3 Web! woohlalala" />
       <div v-for="user in userList" :key="user.id">
         <p>User ID: {{ user.id }}, Name: {{ user.name }}, Email: {{ user.email }}</p>
       </div>
