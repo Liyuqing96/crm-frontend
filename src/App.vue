@@ -37,7 +37,7 @@ async function sendMessage() {
 </script>
 
 <template>
-  <div>
+  <div class="app-wrapper">
     <div class="title"><img :src="logo" alt="logo" class="logo" />今天有什么可以帮你？</div>
     <div class="chat-container">
       <div class="chat-header">
@@ -81,6 +81,22 @@ async function sendMessage() {
   text-align: center;
   color: #222;
 }
+
+@media (max-width: 800px) {
+  .app-wrapper {
+    .title {
+      width: 90%;
+      margin: 20px auto;
+      font-size: 22px;
+      font-weight: 600;
+      text-align: center;
+      color: #222;
+    }
+    .chat-container {
+      width: 90%;
+    }
+  }
+}
 .chat-container {
   width: 75%;
   margin: 10px auto 60px;
@@ -119,6 +135,7 @@ async function sendMessage() {
 }
 
 .chat-message {
+  margin-bottom: 20px;
   max-width: 80%;
   padding: 12px 18px;
   border-radius: 16px;
