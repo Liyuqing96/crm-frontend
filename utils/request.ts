@@ -4,8 +4,7 @@ import { ElMessage } from 'element-plus'
 
 // 创建 axios 实例
 const request = axios.create({
-  baseURL: 'http://localhost:9000/api/v1', // 代理前缀
-  // baseURL: 'http://api.julia-continuing.cn/api/v1', // 代理前缀
+  baseURL: import.meta.env.VITE_API_BASE_URL, // 根据环境自动切换
   timeout: 15000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json;charset=UTF-8',
