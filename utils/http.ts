@@ -1,84 +1,71 @@
-// src/utils/request.js
-import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import request from './request'
+import type { AxiosRequestConfig, AxiosResponse } from 'axios'
 
-// 创建 axios 实例
-const request = axios.create({
-  // baseURL: 'http://localhost:9000/api/v1', // 代理前缀
-  baseURL: 'http://api.julia-continuing.cn/api/v1', // 代理前缀
-  timeout: 15000, // 请求超时时间
-  headers: {
-    'Content-Type': 'application/json;charset=UTF-8',
-  },
-})
+// 定义请求配置接口
+interface HttpRequestConfig extends AxiosRequestConfig {
+  url: string
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'get' | 'post' | 'put' | 'delete' | 'patch'
+  data?: Record<string, unknown>
+  params?: Record<string, unknown>
+  headers?: Record<string, string>
+}
 
-// 请求拦截器
-request.interceptors.request.use(
-  (config) => {
-    // 在发送请求之前做些什么
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+// 统一的请求方法
+const http = async <T = unknown>(config: HttpRequestConfig): Promise<T> => {
+  try {
+    const response: AxiosResponse = await request({
+      ...config,
+      method: config.method?.toUpperCase() as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+    })
+    return response as T
+  } catch (error) {
+    throw error
+  }
+}
 
-    // 如果是 GET 请求，添加时间戳防止缓存
-    if (config.method === 'get') {
-      config.params = {
-        ...config.params,
-        _t: Date.now(),
-      }
-    }
+// 封装 GET 请求
+http.get = <T = unknown>(
+  url: string,
+  params?: Record<string, unknown>,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
+  return request.get(url, { params, ...config })
+}
 
-    return config
-  },
-  (error) => {
-    // 对请求错误做些什么
-    console.error('请求错误:', error)
-    return Promise.reject(error)
-  },
-)
+// 封装 POST 请求
+http.post = <T = unknown>(
+  url: string,
+  data?: Record<string, unknown>,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
+  return request.post(url, data, config)
+}
 
-// 响应拦截器
-request.interceptors.response.use(
-  (response) => {
-    // 对响应数据做点什么
-    return response.data || response
-  },
-  (error) => {
-    // 对响应错误做点什么
-    console.error('响应错误:', error)
+// 封装 PUT 请求
+http.put = <T = unknown>(
+  url: string,
+  data?: Record<string, unknown>,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
+  return request.put(url, data, config)
+}
 
-    if (error.response) {
-      // 服务器返回了错误状态码
-      switch (error.response.status) {
-        case 401:
-          // token 过期或未登录
-          ElMessage.error('登录已过期，请重新登录')
-          localStorage.removeItem('token')
-          window.location.href = '/login'
-          break
-        case 403:
-          ElMessage.error('没有权限访问')
-          break
-        case 404:
-          ElMessage.error('请求的资源不存在')
-          break
-        case 500:
-          ElMessage.error('服务器内部错误')
-          break
-        default:
-          ElMessage.error(error.response.data?.message || '请求失败')
-      }
-    } else if (error.request) {
-      // 请求发送了但没有收到响应
-      ElMessage.error('网络连接失败，请检查网络')
-    } else {
-      // 请求配置出错
-      ElMessage.error('请求配置错误')
-    }
+// 封装 DELETE 请求
+http.delete = <T = unknown>(
+  url: string,
+  params?: Record<string, unknown>,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
+  return request.delete(url, { params, ...config })
+}
 
-    return Promise.reject(error)
-  },
-)
+// 封装 PATCH 请求
+http.patch = <T = unknown>(
+  url: string,
+  data?: Record<string, unknown>,
+  config?: AxiosRequestConfig,
+): Promise<T> => {
+  return request.patch(url, data, config)
+}
 
-export default request
+export default http
