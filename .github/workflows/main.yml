@@ -1,4 +1,4 @@
-name: Deploy to Tencent Cloud
+name: Deploy to Tencent Cloud By ubantu Test
 
 on:
   push:
@@ -39,13 +39,32 @@ jobs:
         REMOTE_HOST: ${{ secrets.TENCENT_HOST }}
         REMOTE_USER: ${{ secrets.TENCENT_USER }}
         TARGET: ${{ env.DEPLOY_PATH }}
+        ARGS: "-avz --delete"
+        # 将复杂的脚本拆解，并加入关键调试信息
         SCRIPT_BEFORE: |
-          # 备份当前版本
-          sudo cp -r ${{ env.DEPLOY_PATH }} ${{ env.DEPLOY_PATH }}-backup-$(date +%Y%m%d%H%M%S) || true
-          sudo rm -rf ${{ env.DEPLOY_PATH }}/*
+          echo "=== 开始执行部署前脚本 ==="
+          echo "当前用户: $(whoami)"
+          echo "目标目录: ${{ env.DEPLOY_PATH }}"
+          # 检查目录是否存在
+          if [ -d "${{ env.DEPLOY_PATH }}" ]; then
+            BACKUP_PATH="${{ env.DEPLOY_PATH }}-backup-$(date +%Y%m%d%H%M%S)"
+            echo "创建备份: $BACKUP_PATH"
+            sudo cp -r "${{ env.DEPLOY_PATH }}" "$BACKUP_PATH" || echo "备份失败（可能目录为空），继续..."
+          else
+            echo "目标目录不存在，将创建。"
+            sudo mkdir -p "${{ env.DEPLOY_PATH }}" || echo "目录创建失败"
+          fi
+          # 列出目录内容（备份后）
+          echo "备份后目录列表："
+          sudo ls -la "${{ env.DEPLOY_PATH }}/" 2>/dev/null || echo "无法列出目录"
+          echo "=== 部署前脚本结束 ==="
         SCRIPT_AFTER: |
-          # 设置权限
-          sudo chown -R www-data:www-data ${{ env.DEPLOY_PATH }}
-          sudo chmod -R 755 ${{ env.DEPLOY_PATH }}
-          # 重启nginx（如果需要）
-          sudo systemctl reload nginx || true
+          echo "=== 开始执行部署后脚本 ==="
+          echo "设置文件权限..."
+          sudo chown -R www-data:www-data "${{ env.DEPLOY_PATH }}" || echo "更改所有者失败"
+          sudo chmod -R 755 "${{ env.DEPLOY_PATH }}" || echo "更改权限失败"
+          echo "部署后目录列表："
+          sudo ls -la "${{ env.DEPLOY_PATH }}/" 2>/dev/null || echo "无法列出目录"
+          echo "尝试重启Nginx..."
+          sudo systemctl reload nginx 2>/dev/null || sudo systemctl restart nginx 2>/dev/null || echo "Nginx操作失败或未安装"
+          echo "=== 部署后脚本结束 ==="

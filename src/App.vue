@@ -22,7 +22,6 @@ async function sendMessage() {
   input.value = ''
   loading.value = true
   try {
-    // 这里用 fetch 作为示例，请根据实际接口替换
     const res = (await chatSend({ message: text, history: [] })) as ChatSendResponse
     if (res.code === 0) {
       messages.value.push({ from: 'bot', text: res.data.reply || '（无回复）' })
